@@ -1,0 +1,67 @@
+import Foundation
+
+/// Holds image data information as a series of ARGB color values in a data stream.
+final class ImageData {
+    let size: Size
+    private(set) var data: Data
+
+    /// Initializes a new blank image, with the given size, with all data values
+    /// initialized to zero.
+    init(size: Size) {
+        self.size = size
+
+        data = Data(count: size.width * size.height * 4)
+    }
+
+    /// Makes a fresh copy of this image data, with independent pixel data information.
+    func copy() -> ImageData {
+        let copy = ImageData(size: size)
+        copy.data = Data(data)
+        return copy
+    }
+
+    func withUnsafeMutableBytes(_ closure: (_ pointer: UnsafeMutableRawBufferPointer) -> Void) {
+        data.withUnsafeMutableBytes { pointer in
+            closure(pointer)
+        }
+    }
+
+    func setPixel(index: Int, argb: Int) {
+        precondition(index >= 0 && index < size.width * size.height, "Attempting to set pixel out of image bounds.")
+
+        data[index * 4] = UInt8(truncatingIfNeeded: (argb >> 24) & 0xFF)
+        data[index * 4 + 1] = UInt8(truncatingIfNeeded: (argb >> 16) & 0xFF)
+        data[index * 4 + 2] = UInt8(truncatingIfNeeded: (argb >> 8) & 0xFF)
+        data[index * 4 + 3] = UInt8(truncatingIfNeeded: argb & 0xFF)
+    }
+
+    /// Sets a given pixel's color on this image.
+    ///
+    /// Precondition: x and y are within the range of the image's bounds.
+    func setPixel(x: Int, y: Int, argb: Int) {
+        let index = (x + y * size.width)
+
+        setPixel(index: index, argb: argb)
+    }
+
+    /// Sets a given pixel's color on this image.
+    ///
+    /// Precondition: x and y are within the range of the image's bounds.
+    func setPixel(x: Int, y: Int, color: Color) {
+        setPixel(x: x, y: y, argb: color.asARGB)
+    }
+
+    /// Fills the entire data buffer with a given ARGB color value.
+    func fill(argb: Int) {
+        data.withUnsafeMutableBytes { pointer in
+            pointer.withMemoryRebound(to: Int32.self) { buffer in
+                buffer.update(repeating: Int32(argb))
+            }
+        }
+    }
+
+    /// Fills the entire data buffer with a given Color value.
+    func fill(color: Color) {
+        fill(argb: color.asARGB)
+    }
+}

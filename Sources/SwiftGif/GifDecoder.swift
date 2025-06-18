@@ -1,7 +1,7 @@
 import Foundation
 
 /// A decoder for GIF files.
-class GifDecoder {
+public final class GifDecoder {
     /// Plaintext label - identifies the current block as a plain text extension.
     static let code_plaintext_label: UInt8 = 0x01
 
@@ -26,18 +26,19 @@ class GifDecoder {
     /// Extension.
     static let code_application_extension_label: UInt8 = 0xFF
 
-    var reader: ByteReaderStream
-    var gifHeader: GifHeader
-    var lsd: LogicalScreenDescriptor
+    public var gifHeader: GifHeader
+    public var lsd: LogicalScreenDescriptor
     var lastNoDisposalFrame: GifFrame?
-    var frameDelays: [Int] = []
-    var gct: ColorTable?
-    var netscapeExtension: NetscapeExtension?
-    var applicationExtensions: [ApplicationExtension] = []
-    var frames: [GifFrame] = []
+    public var frameDelays: [Int] = []
+    public var gct: ColorTable?
+    public var netscapeExtension: NetscapeExtension?
+    public var applicationExtensions: [ApplicationExtension] = []
+    public var frames: [GifFrame] = []
+    // Non-fatal errors raised during parsing.
+    public var errors: [GifError] = []
 
     init(data: Data) throws {
-        reader = ByteReaderStream(data: data)
+        let reader = ByteReaderStream(data: data)
 
         gifHeader = try GifHeader(inputStream: reader)
         lsd = try LogicalScreenDescriptor(inputStream: reader)
@@ -55,7 +56,8 @@ class GifDecoder {
 
         while !done {
             if inputStream.isEof {
-                throw GifError.unexpectedEnfOfFile
+                errors.append(.unexpectedEnfOfFile)
+                break
             }
 
             let code = try inputStream.readByte()
@@ -99,7 +101,7 @@ class GifDecoder {
                 break
 
             default:
-                throw GifError.unknownBlockIdentifier(Int(code))
+                errors.append(GifError.unknownBlockIdentifier(Int(code)))
             }
         }
     }

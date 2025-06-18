@@ -1,10 +1,10 @@
 /// A global or local color table which forms part of a GIF data stream.
-struct ColorTable {
+public struct ColorTable {
     /// Gets the entire color table stored in this color table.
-    var intColors: [UInt32]
+    public var intColors: [UInt32]
 
     /// Gets the length of this color table.
-    var tableSize: Int {
+    public var tableSize: Int {
         intColors.count
     }
 
@@ -37,12 +37,12 @@ struct ColorTable {
     }
 
     /// Gets the color at a specified index in this color table as a ARGB integer.
-    func colorInt(index: Int) -> UInt32 {
+    public func colorInt(index: Int) -> UInt32 {
         intColors[index]
     }
 
     /// Gets the color at a specified index in this color table.
-    func color(index: Int) -> Color {
+    public func color(index: Int) -> Color {
         return Color(hex: colorInt(index: index))
     }
 }

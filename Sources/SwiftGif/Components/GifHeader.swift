@@ -7,11 +7,11 @@
 /// process the Data Stream.
 /// This block is REQUIRED; exactly one Header must be present per Data
 /// Stream.
-struct GifHeader {
+public struct GifHeader {
     /// Gets the signature of the GIF file. Always `"GIF"` for valid GIF files.
-    var signature: String
+    public var signature: String
     /// Gets the GIF file version signature.
-    var gifVersion: String
+    public var gifVersion: String
 
     init(inputStream: ByteReaderStream) throws {
         if inputStream.remainingBytes < 6 {

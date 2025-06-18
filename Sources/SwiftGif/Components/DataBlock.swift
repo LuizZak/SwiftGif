@@ -11,17 +11,17 @@ import Foundation
 /// may contain from 0 to 255 data bytes. The size of the block does not
 /// account for the size byte itself, therefore, the empty sub-block is one
 /// whose size field contains 0x00.
-struct DataBlock {
-    var blockSize: Int
-    var data: Data
+public struct DataBlock {
+    public var blockSize: Int
+    public var data: Data
 
-    var isTooShort: Bool {
+    public var isTooShort: Bool {
         blockSize > data.count
     }
-    var actualBlockSize: Int {
+    public var actualBlockSize: Int {
         data.count
     }
-    subscript(index: Int) -> UInt8 {
+    public subscript(index: Int) -> UInt8 {
         data[index]
     }
 

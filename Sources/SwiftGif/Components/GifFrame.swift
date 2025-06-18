@@ -1,35 +1,35 @@
 /// A single image frame from a GIF file.
-struct GifFrame {
+public struct GifFrame {
     /// Index of frame, starting from zero.
-    var index: Int
+    public var index: Int
 
     /// Image data decoded from frame, in ARGB format.
-    var image: ImageData
+    public var image: ImageData
 
     /// Delay, in hundredths of milliseconds (1/100), to wait while displaying
     /// this frame.
-    var delay: Int
+    public var delay: Int
 
     /// Whether this frame expects some sort of user input to progress.
-    var expectsUserInput: Bool
+    public var expectsUserInput: Bool
 
     /// Local color table, if present.
-    var localColorTable: ColorTable?
+    public var localColorTable: ColorTable?
 
     /// The image descriptor for this frame.
-    var imageDescriptor: ImageDescriptor
+    public var imageDescriptor: ImageDescriptor
 
     /// The computed background color for this frame.
-    var backgroundColor: Color
+    public var backgroundColor: Color
 
     /// The logical screen descriptor for the GIF file.
-    var logicalScreenDescriptor: LogicalScreenDescriptor
+    public var logicalScreenDescriptor: LogicalScreenDescriptor
 
     /// A global color table allocated to this frame, if available.
-    var globalColorTable: ColorTable?
+    public var globalColorTable: ColorTable?
 
     /// The computed graphic control extension for this frame.
-    var graphicControlExtension: GraphicControlExtension
+    public var graphicControlExtension: GraphicControlExtension
 
     init(
         inputStream: ByteReaderStream,

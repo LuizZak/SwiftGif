@@ -1,11 +1,11 @@
 /// Represents an error thrown during gif file parsing.
-enum GifError: Error, CustomStringConvertible {
+public enum GifError: Error, CustomStringConvertible {
     case dataCorrupted(String? = nil)
     case unknownBlockIdentifier(Int)
     case unexpectedEnfOfFile
     case incorrectExtension(String? = nil)
 
-    var description: String {
+    public var description: String {
         switch self {
         case .dataCorrupted(let message):
             if let message {

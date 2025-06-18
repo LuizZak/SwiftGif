@@ -1,5 +1,5 @@
 /// A size coordinate.
-struct Size: Hashable {
-    var width: Int
-    var height: Int
+public struct Size: Hashable {
+    public var width: Int
+    public var height: Int
 }

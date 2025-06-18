@@ -1,8 +1,8 @@
 import Foundation
 
 /// Holds image data information as a series of ARGB color values in a data stream.
-final class ImageData {
-    let size: Size
+public final class ImageData {
+    public let size: Size
     private(set) var data: Data
 
     /// Initializes a new blank image, with the given size, with all data values

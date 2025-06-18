@@ -3,11 +3,11 @@
 /// 0xFF.
 ///
 /// See http://www.w3.org/Graphics/GIF/spec-gif89a.txt section 26.
-class ApplicationExtension {
-    var identificationBlock: DataBlock
-    var applicationIdentifier: String
-    var applicationAuthenticationCode: String
-    var applicationData: [DataBlock] = []
+public class ApplicationExtension {
+    public var identificationBlock: DataBlock
+    public var applicationIdentifier: String
+    public var applicationAuthenticationCode: String
+    public var applicationData: [DataBlock] = []
 
     init(inputStream: ByteReaderStream) throws {
         identificationBlock = try DataBlock(inputStream: inputStream)

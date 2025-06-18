@@ -11,10 +11,10 @@
 // printer coordinates when a printer is used.
 // This block is REQUIRED; exactly one Logical Screen Descriptor must be
 // present per Data Stream.
-struct LogicalScreenDescriptor {
+public struct LogicalScreenDescriptor {
     /// The width and height, in pixels, of the logical screen where the images
     /// will be rendered in the displaying device.
-    var screenSize: Size
+    public var screenSize: Size
 
     /// Gets a flag indicating the presence of a Global Color Table; if the
     /// flag is set, the Global Color Table will immediately follow the
@@ -22,7 +22,7 @@ struct LogicalScreenDescriptor {
     /// of the Background Color Index; if the flag is set, the value of the
     /// Background Color Index field should be used as the table index of
     /// the background color.
-    var hasGlobalColorTable: Bool
+    public var hasGlobalColorTable: Bool
 
     /// Gets the number of bits per primary color available to the original
     /// image, minus 1. This value represents the size of the entire palette
@@ -33,7 +33,7 @@ struct LogicalScreenDescriptor {
     /// the image.  This value should be set to indicate the richness of
     /// the original palette, even if not every color from the whole
     /// palette is available on the source machine.
-    var colorResolution: Int
+    public var colorResolution: Int
 
     /// Indicates whether the Global Color Table is sorted.
     /// If the flag is set, the Global Color Table is sorted, in order of
@@ -42,7 +42,7 @@ struct LogicalScreenDescriptor {
     /// with fewer available colors, in choosing the best subset of colors;
     /// the decoder may use an initial segment of the table to render the
     /// graphic.
-    var gctIsSorted: Bool
+    public var gctIsSorted: Bool
 
     /// If the Global Color Table Flag is set to 1, the value in this field
     /// is used to calculate the number of bytes contained in the Global
@@ -51,10 +51,10 @@ struct LogicalScreenDescriptor {
     /// Even if there is no Global Color Table specified, set this field
     /// according to the above formula so that decoders can choose the best
     /// graphics mode to display the stream in.
-    var gctSizeBits: Int
+    public var gctSizeBits: Int
 
     /// Gets the number of colors in the global color table.
-    var globalColorTableSize: Int {
+    public var globalColorTableSize: Int {
         2 << gctSizeBits
     }
 
@@ -63,7 +63,7 @@ struct LogicalScreenDescriptor {
     /// screen that are not covered by an image.
     /// If the Global Color Table Flag is set to (zero), this field should
     /// be zero and should be ignored.
-    var backgroundColorIndex: Int
+    public var backgroundColorIndex: Int
 
     /// Gets the factor used to compute an approximation of the aspect ratio
     /// of the pixel in the original image.  If the value of the field is
@@ -75,7 +75,7 @@ struct LogicalScreenDescriptor {
     /// The Pixel Aspect Ratio is defined to be the quotient of the pixel's
     /// width over its height.  The value range in this field allows
     /// specification of the wid
-    var pixelAspectRatio: Int
+    public var pixelAspectRatio: Int
 
     init(inputStream: ByteReaderStream) throws {
         if inputStream.remainingBytes < 7 {

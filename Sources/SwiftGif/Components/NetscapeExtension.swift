@@ -2,7 +2,7 @@
 /// should be displayed.
 ///
 /// See http://www.let.rug.nl/~kleiweg/gif/netscape.html for format
-class NetscapeExtension: ApplicationExtension {
+public class NetscapeExtension: ApplicationExtension {
     /// Number of times to repeat the frames of the animation. 0 to repeat indefinitely,
     /// -1 to not repeat.
     private(set) var loopCount: Int = 0

@@ -21,23 +21,23 @@
 ///
 /// The scope of this block is the Table-based Image Data Block that
 /// follows it. This block may be modified by the Graphic Control Extension.
-struct ImageDescriptor {
+public struct ImageDescriptor {
     /// Gets the position, in pixels, of the top-left corner of the image,
     /// with respect to the top-left corner of the logical screen.
     /// Top-left corner of the logical screen is 0,0.
-    var position: Point
+    public var position: Point
 
     /// Gets the size of the image in pixels.
-    var size: Size
+    public var size: Size
 
     /// Gets a boolean value indicating the presence of a Local Color table
     /// immediately following this Image Descriptor.
-    var hasLocalColorTable: Bool
+    public var hasLocalColorTable: Bool
 
     /// Gets a boolean value indicating whether the image is interlaced. An
     /// image is interlaced in a four-pass interlace pattern; see Appendix E
     /// for details.
-    var isInterlaced: Bool
+    public var isInterlaced: Bool
 
     /// Gets a boolean value indicating whether the Local Color Table is
     /// sorted.  If the flag is set, the Local Color Table is sorted, in
@@ -46,17 +46,17 @@ struct ImageDescriptor {
     /// a decoder, with fewer available colors, in choosing the best subset
     /// of colors; the decoder may use an initial segment of the table to
     /// render the graphic.
-    var isSorted: Bool
+    public var isSorted: Bool
 
     /// If the Local Color Table Flag is set to 1, the value in this field
     /// is used to calculate the number of bytes contained in the Local
     /// Color Table. To determine that actual size of the color table,
     /// raise 2 to the value of the field + 1.
     /// This value should be 0 if there is no Local Color Table specified.
-    var localColorTableSizeBits: Int
+    public var localColorTableSizeBits: Int
 
     /// Gets the actual size of the local colour table.
-    var localColorTableSize: Int {
+    public var localColorTableSize: Int {
         2 << localColorTableSizeBits
     }
 

@@ -1,5 +1,5 @@
 /// Represents an internal color table color value as an ARGB color value.
-public struct Color {
+public struct Color: Hashable {
     nonisolated(unsafe)
     public static let transparentBlack: Color = Color(hex: 0x00000000)
     nonisolated(unsafe)
@@ -15,7 +15,7 @@ public struct Color {
         (UInt32(alpha) << 24) | (UInt32(red) << 16) | (UInt32(green) << 8) | UInt32(blue)
     }
 
-    init(hex: UInt32) {
+    public init(hex: UInt32) {
         alpha = UInt8((hex >> 24) & 0xFF)
         red = UInt8((hex >> 16) & 0xFF)
         green = UInt8((hex >> 8) & 0xFF)

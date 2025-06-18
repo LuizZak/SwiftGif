@@ -7,20 +7,20 @@ public final class ImageData {
 
     /// Initializes a new blank image, with the given size, with all data values
     /// initialized to zero.
-    init(size: Size) {
+    public init(size: Size) {
         self.size = size
 
         data = Data(count: size.width * size.height * 4)
     }
 
     /// Makes a fresh copy of this image data, with independent pixel data information.
-    func copy() -> ImageData {
+    public func copy() -> ImageData {
         let copy = ImageData(size: size)
         copy.data = Data(data)
         return copy
     }
 
-    func withUnsafeMutableBytes(_ closure: (_ pointer: UnsafeMutableRawBufferPointer) -> Void) {
+    public func withUnsafeMutableBytes(_ closure: (_ pointer: UnsafeMutableRawBufferPointer) -> Void) {
         data.withUnsafeMutableBytes { pointer in
             closure(pointer)
         }

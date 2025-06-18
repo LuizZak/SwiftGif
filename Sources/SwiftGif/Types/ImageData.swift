@@ -51,9 +51,21 @@ public final class ImageData {
         setPixel(x: x, y: y, argb: color.asARGB)
     }
 
+    /// Fills a given row of pixel data with a given color.
+    func fillRow(x: Int, y: Int, width: Int, argb: UInt32) {
+        let width = min(width, self.size.width - x)
+        let offset = x + y * size.width
+
+        withUnsafeMutableBytes { pointer in
+            pointer.withMemoryRebound(to: UInt32.self) { buffer in
+                buffer[offset..<(offset + width)].update(repeating: argb)
+            }
+        }
+    }
+
     /// Fills the entire data buffer with a given ARGB color value.
     func fill(argb: UInt32) {
-        data.withUnsafeMutableBytes { pointer in
+        withUnsafeMutableBytes { pointer in
             pointer.withMemoryRebound(to: UInt32.self) { buffer in
                 buffer.update(repeating: UInt32(argb))
             }

@@ -242,12 +242,12 @@ public struct GifFrame {
                 let maxY = previousFrame.imageDescriptor.position.y + previousFrame.imageDescriptor.size.height
 
                 for y in minY..<maxY {
-                    let minX = previousFrame.imageDescriptor.position.x
-                    let maxX = previousFrame.imageDescriptor.position.x + previousFrame.imageDescriptor.size.width
-
-                    for x in minX..<maxX {
-                        baseImage.setPixel(x: x, y: y, color: backgroundColor)
-                    }
+                    baseImage.fillRow(
+                        x: previousFrame.imageDescriptor.position.x,
+                        y: y,
+                        width: previousFrame.imageDescriptor.position.x + previousFrame.imageDescriptor.size.width,
+                        argb: backgroundColor.asARGB
+                    )
                 }
             }
 

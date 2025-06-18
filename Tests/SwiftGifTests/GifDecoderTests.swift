@@ -11,10 +11,7 @@ struct GifDecoderTests {
         for entry in contents where entry.hasSuffix(".gif") {
             let data = try Data(contentsOf: URL(fileURLWithPath: (folder as NSString).appendingPathComponent(entry)))
 
-            do {
-                _ = try GifDecoder(data: data)
-            } catch GifError.unknownBlockIdentifier {
-            }
+            _ = try GifDecoder(data: data)
         }
     }
 }

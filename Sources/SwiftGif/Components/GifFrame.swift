@@ -104,7 +104,7 @@ struct GifFrame {
         let colors = activeColorTable.intColors
 
         baseImage.withUnsafeMutableBytes { pointer in
-            pointer.withMemoryRebound(to: Int32.self) { imageBuffer in
+            pointer.withMemoryRebound(to: UInt32.self) { imageBuffer in
                 for i in 0..<imageHeight {
                     var pixelRowNumber = i
 
@@ -158,7 +158,7 @@ struct GifFrame {
                             if indexInColorTable < numColors {
                                 let color = colors[indexInColorTable]
 
-                                imageBuffer[dx] = Int32(truncatingIfNeeded: color)
+                                imageBuffer[dx] = color
                             }
                         }
 

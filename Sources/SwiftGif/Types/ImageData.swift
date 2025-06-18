@@ -26,7 +26,7 @@ final class ImageData {
         }
     }
 
-    func setPixel(index: Int, argb: Int) {
+    func setPixel(index: Int, argb: UInt32) {
         precondition(index >= 0 && index < size.width * size.height, "Attempting to set pixel out of image bounds.")
 
         data[index * 4] = UInt8(truncatingIfNeeded: (argb >> 24) & 0xFF)
@@ -38,7 +38,7 @@ final class ImageData {
     /// Sets a given pixel's color on this image.
     ///
     /// Precondition: x and y are within the range of the image's bounds.
-    func setPixel(x: Int, y: Int, argb: Int) {
+    func setPixel(x: Int, y: Int, argb: UInt32) {
         let index = (x + y * size.width)
 
         setPixel(index: index, argb: argb)
@@ -52,10 +52,10 @@ final class ImageData {
     }
 
     /// Fills the entire data buffer with a given ARGB color value.
-    func fill(argb: Int) {
+    func fill(argb: UInt32) {
         data.withUnsafeMutableBytes { pointer in
-            pointer.withMemoryRebound(to: Int32.self) { buffer in
-                buffer.update(repeating: Int32(argb))
+            pointer.withMemoryRebound(to: UInt32.self) { buffer in
+                buffer.update(repeating: UInt32(argb))
             }
         }
     }

@@ -52,148 +52,152 @@ struct TableBasedImageData {
         pixelIndex = 0
 
         var pixelIndices = Data(count: pixelCount)
-        try pixelIndices.withUnsafeMutableBytes { (pixelIndicesPointer: UnsafeMutableRawBufferPointer) in
-            try pixelStack.withUnsafeMutableBytes { (pixelStack: UnsafeMutableRawBufferPointer) in
-                while pixelIndex < pixelCount {
-                    if pixelStackIndex == 0 {
-                        // There are no pixels in the stack at the moment so...
-                        if meaningfulBitsInDatum < currentCodeSize {
-                            // Then we don't have enough bits in the datum to make a code;
-                            // we need to get some more from the current data block, or
-                            // we may need to read another data block from the stream
-                            if bytesToExtract == 0 {
-                                // Then we've extracted all the bytes from the current
-                                // data block, so...
+        try suffix.withUnsafeMutableBytes { (suffix: UnsafeMutableRawBufferPointer) in
+            try prefix.withUnsafeMutableBufferPointer { prefix in
+                try pixelIndices.withUnsafeMutableBytes { (pixelIndicesPointer: UnsafeMutableRawBufferPointer) in
+                    try pixelStack.withUnsafeMutableBytes { (pixelStack: UnsafeMutableRawBufferPointer) in
+                        while pixelIndex < pixelCount {
+                            if pixelStackIndex == 0 {
+                                // There are no pixels in the stack at the moment so...
+                                if meaningfulBitsInDatum < currentCodeSize {
+                                    // Then we don't have enough bits in the datum to make a code;
+                                    // we need to get some more from the current data block, or
+                                    // we may need to read another data block from the stream
+                                    if bytesToExtract == 0 {
+                                        // Then we've extracted all the bytes from the current
+                                        // data block, so...
 
-                                block = try DataBlock(inputStream: inputStream)
-                                bytesToExtract = block.actualBlockSize
+                                        block = try DataBlock(inputStream: inputStream)
+                                        bytesToExtract = block.actualBlockSize
 
-                                // Point to the first byte in the new data block
-                                indexInDataBlock = 0
+                                        // Point to the first byte in the new data block
+                                        indexInDataBlock = 0
 
-                                if block.isTooShort {
-                                    // Then we've reached the end of the stream prematurely
+                                        if block.isTooShort {
+                                            // Then we've reached the end of the stream prematurely
+                                            break
+                                        }
+
+                                        if bytesToExtract == 0 {
+                                            // Then it's a block terminator, end of image data
+                                            // (this is a data block other than the first one)
+                                            break
+                                        }
+                                    }
+
+                                    // Append the contents of the current byte in the data block
+                                    // to the beginning of the datum
+                                    datum += Int(block[indexInDataBlock]) << meaningfulBitsInDatum
+
+                                    // So we've now got 8 more bits of information in the datum.
+                                    meaningfulBitsInDatum += 8
+
+                                    // Point to the next byte in the data block
+                                    indexInDataBlock += 1
+
+                                    // We've got one less byte still to read from the data block
+                                    // now.
+                                    bytesToExtract -= 1
+
+                                    // And carry on reading through the data block
+                                    continue
+                                }
+
+                                // Get the least significant bits from the read datum, up to the
+                                // maximum allowed by the current code size.
+                                code = datum & getMaximumPossibleCode(currentCodeSize: currentCodeSize)
+
+                                // Drop the bits we've just extracted from the datum
+                                datum >>= currentCodeSize
+
+                                // Reduce the count of meaningful bits held in the datum
+                                meaningfulBitsInDatum -= currentCodeSize
+
+                                if code == endOfInformation {
+                                    // We've reached an explicit marker for the end of the image
+                                    // data
                                     break
                                 }
 
-                                if bytesToExtract == 0 {
-                                    // Then it's a block terminator, end of image data
-                                    // (this is a data block other than the first one)
-                                    break
+                                if code > nextAvailableCode {
+                                    // We expect the code to be either one which is already in
+                                    // the dictionary, or the next available one to be added. If
+                                    // it's neither of these then abandon processing of the image.
+                                    throw GifError.dataCorrupted()
                                 }
-                            }
 
-                            // Append the contents of the current byte in the data block
-                            // to the beginning of the datum
-                            datum += Int(block[indexInDataBlock]) << meaningfulBitsInDatum
+                                if code == clearCode {
+                                    // We can get a clear code at any point in the image data,
+                                    // this is an instruction to reset the decoder and empty the
+                                    // dictionary of codes.
+                                    currentCodeSize = getInitialCodeSize()
+                                    nextAvailableCode = getClearCode() + 2
+                                    previousCode = nullCode
 
-                            // So we've now got 8 more bits of information in the datum.
-                            meaningfulBitsInDatum += 8
+                                    // Carry on reading from the input stream
+                                    continue
+                                }
 
-                            // Point to the next byte in the data block
-                            indexInDataBlock += 1
+                                if previousCode == nullCode {
+                                    // This is the first code read since the start of the image
+                                    // data or the most recent clear code.
+                                    // There's no previously read code in memory yet, so get pixel
+                                    // index for the current code and add it to the stack.
+                                    pixelStack[pixelStackIndex] = suffix[code]
+                                    pixelStackIndex += 1
+                                    previousCode = code
+                                    firstCode = code
 
-                            // We've got one less byte still to read from the data block
-                            // now.
-                            bytesToExtract -= 1
+                                    // And carry on to the next pixel
+                                    continue
+                                }
 
-                            // And carry on reading through the data block
-                            continue
-                        }
+                                inCode = code
+                                if code == nextAvailableCode {
+                                    pixelStack[pixelStackIndex] = UInt8(truncatingIfNeeded: firstCode)
+                                    pixelStackIndex += 1
+                                    code = previousCode
+                                }
 
-                        // Get the least significant bits from the read datum, up to the
-                        // maximum allowed by the current code size.
-                        code = datum & getMaximumPossibleCode(currentCodeSize: currentCodeSize)
+                                while code > clearCode {
+                                    pixelStack[pixelStackIndex] = suffix[code]
+                                    pixelStackIndex += 1
+                                    code = prefix[code]
+                                }
 
-                        // Drop the bits we've just extracted from the datum
-                        datum >>= currentCodeSize
+                                firstCode = Int(suffix[code] & 0xFF)
+                                pixelStack[pixelStackIndex] = UInt8(truncatingIfNeeded: firstCode)
+                                pixelStackIndex += 1
 
-                        // Reduce the count of meaningful bits held in the datum
-                        meaningfulBitsInDatum -= currentCodeSize
+                                // This fix is based off of ImageSharp's LzwDecoder.cs:
+                                // https://github.com/SixLabors/ImageSharp/blob/8899f23c1ddf8044d4dea7d5055386f684120761/src/ImageSharp/Formats/Gif/LzwDecoder.cs
 
-                        if code == endOfInformation {
-                            // We've reached an explicit marker for the end of the image
-                            // data
-                            break
-                        }
-
-                        if code > nextAvailableCode {
-                            // We expect the code to be either one which is already in
-                            // the dictionary, or the next available one to be added. If
-                            // it's neither of these then abandon processing of the image.
-                            throw GifError.dataCorrupted()
-                        }
-
-                        if code == clearCode {
-                            // We can get a clear code at any point in the image data,
-                            // this is an instruction to reset the decoder and empty the
-                            // dictionary of codes.
-                            currentCodeSize = getInitialCodeSize()
-                            nextAvailableCode = getClearCode() + 2
-                            previousCode = nullCode
-
-                            // Carry on reading from the input stream
-                            continue
-                        }
-
-                        if previousCode == nullCode {
-                            // This is the first code read since the start of the image
-                            // data or the most recent clear code.
-                            // There's no previously read code in memory yet, so get pixel
-                            // index for the current code and add it to the stack.
-                            pixelStack[pixelStackIndex] = suffix[code]
-                            pixelStackIndex += 1
-                            previousCode = code
-                            firstCode = code
-
-                            // And carry on to the next pixel
-                            continue
-                        }
-
-                        inCode = code
-                        if code == nextAvailableCode {
-                            pixelStack[pixelStackIndex] = UInt8(truncatingIfNeeded: firstCode)
-                            pixelStackIndex += 1
-                            code = previousCode
-                        }
-
-                        while code > clearCode {
-                            pixelStack[pixelStackIndex] = suffix[code]
-                            pixelStackIndex += 1
-                            code = prefix[code]
-                        }
-
-                        firstCode = Int(suffix[code] & 0xFF)
-                        pixelStack[pixelStackIndex] = UInt8(truncatingIfNeeded: firstCode)
-                        pixelStackIndex += 1
-
-                        // This fix is based off of ImageSharp's LzwDecoder.cs:
-                        // https://github.com/SixLabors/ImageSharp/blob/8899f23c1ddf8044d4dea7d5055386f684120761/src/ImageSharp/Formats/Gif/LzwDecoder.cs
-
-                        // Fix for Gifs that have 'deferred clear code' as per here:
-                        // https://bugzilla.mozilla.org/show_bug.cgi?id=55918
-                        if nextAvailableCode < maxStackSize {
-                            prefix[nextAvailableCode] = previousCode & 0xFFFF
-                            suffix[nextAvailableCode] = UInt8(firstCode & 0xFF)
-                            nextAvailableCode += 1
-
-                            if nextAvailableCode & ((1 << currentCodeSize) - 1) == 0 {
-                                // We've reached the largest code possible for this size
+                                // Fix for Gifs that have 'deferred clear code' as per here:
+                                // https://bugzilla.mozilla.org/show_bug.cgi?id=55918
                                 if nextAvailableCode < maxStackSize {
-                                    // So increase the code size by 1
-                                    currentCodeSize += 1
+                                    prefix[nextAvailableCode] = previousCode & 0xFFFF
+                                    suffix[nextAvailableCode] = UInt8(firstCode & 0xFF)
+                                    nextAvailableCode += 1
+
+                                    if nextAvailableCode & ((1 << currentCodeSize) - 1) == 0 {
+                                        // We've reached the largest code possible for this size
+                                        if nextAvailableCode < maxStackSize {
+                                            // So increase the code size by 1
+                                            currentCodeSize += 1
+                                        }
+                                    }
                                 }
+
+                                previousCode = inCode
                             }
+
+                            // Pop all the pixels currently on the stack off, and add them to the
+                            // return value
+                            pixelStackIndex -= 1
+                            pixelIndicesPointer[pixelIndex] = pixelStack[pixelStackIndex]
+                            pixelIndex += 1
                         }
-
-                        previousCode = inCode
                     }
-
-                    // Pop all the pixels currently on the stack off, and add them to the
-                    // return value
-                    pixelStackIndex -= 1
-                    pixelIndicesPointer[pixelIndex] = pixelStack[pixelStackIndex]
-                    pixelIndex += 1
                 }
             }
         }

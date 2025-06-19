@@ -1,7 +1,7 @@
 import Foundation
 
 class ByteReaderStream {
-    var data: Data
+    let data: Data
     var index: Int = 0
 
     var remainingBytes: Int {
@@ -65,8 +65,8 @@ class ByteReaderStream {
 
     class Backtracker {
         private var _used: Bool = false
-        private var _inputStream: ByteReaderStream
-        private var _index: Int
+        private let _inputStream: ByteReaderStream
+        private let _index: Int
 
         init(inputStream: ByteReaderStream, index: Int) {
             self._inputStream = inputStream

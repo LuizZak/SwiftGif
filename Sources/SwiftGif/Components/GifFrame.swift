@@ -81,7 +81,13 @@ public struct GifFrame {
         self.imageDescriptor = imageDescriptor
         self.backgroundColor = backgroundColor
 
-        let baseImage = Self.getBaseImage(previousFrame: previousFrame, previousFrameBut1: previousFrameBut1, lsd: logicalScreenDescriptor, gce: graphicControlExtension, act: activeColorTable)
+        let baseImage = Self.getBaseImage(
+            previousFrame: previousFrame,
+            previousFrameBut1: previousFrameBut1,
+            lsd: logicalScreenDescriptor,
+            gce: graphicControlExtension,
+            act: activeColorTable
+        )
 
         // MARK: - Decode image
 
@@ -140,11 +146,7 @@ public struct GifFrame {
 
                     let k = pixelRowNumber * logicalWidth
                     var dx = k + imageX // Start of line in dest
-                    var dlim = dx + imageWidth // End of dest line
-
-                    if (k + logicalWidth) < dlim {
-                        dlim = k + logicalWidth // Past dest edge
-                    }
+                    let dlim = min(k + logicalWidth, dx + imageWidth) // End of dest line
 
                     var sx = i * imageWidth // Start of line in source
 
